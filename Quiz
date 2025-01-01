@@ -1,0 +1,94 @@
+import pygame
+import random
+pygame.init()
+SCREEN_WIDTH, SCREEN_HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
+BACKGROUND_IMAGE = 'C:/Users/Admin/Desktop/Shehnaaz Begum BSc CsM/Project materials/screen.jpg'  # Replace with your background image path
+FONT_SIZE = 40
+GREEN = (50, 255, 50)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+background = pygame.image.load(BACKGROUND_IMAGE)
+background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+pygame.display.set_caption("Quiz Game")
+font = pygame.font.Font(None, FONT_SIZE)
+questions = [{"question": "What is the scientific term used for the twinkling of stars?",
+        "options": ["Refraction", "Scintillation", "Albedo", "Parallax"],
+        "answer": "Scintillation"},
+    {"question": "What is the outermost region of the Sun's atmosphere called?",
+        "options": ["Corona", "Penumbra", "Core", "Chromosphere"],
+        "answer": "Corona"},
+    {"question": "When was Pluto removed from the list of planets?",
+        "options": ["2003", "2010", "2006", "2000"],
+        "answer": "2006"},
+    {"question": "What is the nucleus of a comet made of?",
+        "options": ["Helium and water", "Ice, dust and organic material", "Ice and water", "Dust and gases"],
+        "answer": "Ice, dust and organic material"},
+    {"question": "Who was the first female commander of the International Space Station (ISS)?",
+        "options": ["Eileen Collins", "Peggy Whitson", "Christina Koch", "Valentina Tereshkova"],
+        "answer": "Peggy Whitson"},
+    {"question": "Which planet do not have a natural satellite?",
+        "options": ["Uranus and Venus", "Mercury and Saturn", "Mercury and Neptune", "Mercury and Venus"],
+        "answer": "Mercury and Venus"},]
+score = 0
+current_question = 0
+timer = 20
+running = True
+start_time = pygame.time.get_ticks()
+def display_result(won):
+    if won:
+        message = "You Win!"
+    else:
+        message = f"You Lose! Questions Wrong: {len(questions) - score}"
+    text = font.render(message, True, GREEN if won else RED)
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+    screen.blit(text, text_rect)
+    pygame.display.flip()
+    pygame.time.wait(3000)
+while running:
+    screen.blit(background, (0, 0))
+    elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
+    timer = 20 - int(elapsed_time)
+    if timer <= 0:
+        current_question += 1
+        start_time = pygame.time.get_ticks()
+        timer = 20
+    if current_question < len(questions):
+        question_box = pygame.Rect(50, 225, SCREEN_WIDTH - 100, 80)
+        pygame.draw.rect(screen, BLACK, question_box)
+        pygame.draw.rect(screen, GREEN, question_box, 2)
+        question_text = font.render(questions[current_question]["question"], True, GREEN)
+        question_rect = question_text.get_rect(center=question_box.center)
+        screen.blit(question_text, question_rect)
+        button_rects=[]
+        for index, option in enumerate(questions[current_question]["options"]):
+            if index < 2:
+                button_rect = pygame.Rect(50, 325 + index * 80, SCREEN_WIDTH//2 - 100, 50)  # Changed width to 500
+            else:
+                button_rect = pygame.Rect(SCREEN_WIDTH // 2 + 50, 325 + (index - 2) * 80, SCREEN_WIDTH//2 - 100, 50)  # Same width for second column
+            button_rects.append(button_rect)
+            pygame.draw.rect(screen, BLACK, button_rect)
+            pygame.draw.rect(screen, GREEN, button_rect, 2)
+            option_text = font.render(option, True, GREEN)
+            option_rect = option_text.get_rect(topleft=(button_rect.x + 10, button_rect.y + 10))
+            screen.blit(option_text, option_rect)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                for index, button_rect in enumerate(button_rects):
+                    if button_rect.collidepoint(mouse_x, mouse_y):
+                        if questions[current_question]["options"][index] == questions[current_question]["answer"]:
+                            score += 1
+                        current_question += 1
+                        timer = 20
+                        start_time = pygame.time.get_ticks()
+                        break
+    else:
+        display_result(score == len(questions))
+        running = False
+    timer_text = font.render(f"Time: {timer}", True, GREEN)
+    screen.blit(timer_text, (SCREEN_WIDTH - 200, 100))
+    pygame.display.flip()
+pygame.quit()
